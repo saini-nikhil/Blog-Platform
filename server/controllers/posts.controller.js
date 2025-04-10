@@ -123,7 +123,7 @@ const updatePost = async (req, res) => {
         imageUrl: imageUrl || post.imageUrl,
       },
       { new: true }
-    ).populate('author', 'name profilePicture');
+    ).populate('author', 'name profilePicture');8
 
     res.status(200).json(updatedPost);
   } catch (error) {
@@ -237,5 +237,38 @@ const getUserPosts = async (req, res) => {
   }
 };
 
+const getPopularTags = async (req, res) => {
+  try {
+    const posts = await Post.find({});
+    
+    // Create a map to count occurrences of each tag
+    const tagCounts = {};
+    
+    posts.forEach(post => {
+      if (post.tags && Array.isArray(post.tags)) {
+        post.tags.forEach(tag => {
+          if (tag) {
+            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+    
+    // Convert the map to an array of objects
+    const tags = Object.keys(tagCounts).map(name => ({
+      name,
+      count: tagCounts[name]
+    }));
+    
+    // Sort by count in descending order
+    tags.sort((a, b) => b.count - a.count);
+    
+    // Ensure we always return an array
+    res.status(200).json(tags || []);
+  } catch (error) {
+    console.error('Get popular tags error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-module.exports = {getPosts , getPost , createPost ,updatePost ,deletePost , likePost , addComment ,getUserPosts}
+module.exports = {getPosts , getPost , createPost ,updatePost ,deletePost , likePost , addComment ,getUserPosts, getPopularTags}

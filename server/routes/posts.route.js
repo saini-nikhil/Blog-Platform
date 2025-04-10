@@ -1,6 +1,6 @@
 const express = require("express")
 
-const {getPosts , getPost , createPost ,updatePost ,deletePost , likePost , addComment ,getUserPosts} = require("../controllers/posts.controller")
+const {getPosts , getPost , createPost ,updatePost ,deletePost , likePost , addComment ,getUserPosts, getPopularTags} = require("../controllers/posts.controller")
 
 const auth = require("../middleware/auth.middileware")
 
@@ -27,6 +27,8 @@ router.post ("/:id/comments" , auth , addComment)
 router.get("/user/:userId" , getUserPosts)
 
 router.get("/my-posts/all" , auth , getUserPosts)
+
+router.get("/tags/popular", getPopularTags)
 
 
 module.exports  = router

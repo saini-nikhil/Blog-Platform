@@ -23,20 +23,37 @@ const Home = () => {
         setError('');
         
         const { data } = await api.getPosts(currentPage, 8, activeTag);
-        setPosts(data.posts);
-        setTotalPages(data.totalPages);
+        
+        // Check if the response has the expected structure
+        if (data && Array.isArray(data.posts)) {
+          setPosts(data.posts);
+          setTotalPages(data.totalPages || 1);
+        } else {
+          console.error('Unexpected posts data structure:', data);
+          setPosts([]);
+          setError('Failed to load posts. Unexpected data format.');
+        }
         
         // If we're on the first page and no tag filter, get popular tags
         if (currentPage === 1 && !activeTag) {
           try {
             const tagsResponse = await api.getPopularTags();
-            setPopularTags(tagsResponse.data.slice(0, 10)); // Get top 10 tags
+            
+            // Check if the response has the expected data format
+            if (tagsResponse && tagsResponse.data && Array.isArray(tagsResponse.data)) {
+              setPopularTags(tagsResponse.data.slice(0, 10)); // Get top 10 tags
+            } else {
+              console.warn('Tags data is not an array:', tagsResponse?.data);
+              setPopularTags([]);
+            }
           } catch (error) {
             console.error('Error fetching tags:', error);
+            setPopularTags([]);
           }
         }
       } catch (error) {
         console.error('Error fetching posts:', error);
+        setPosts([]);
         setError('Failed to load posts. Please try again later.');
       } finally {
         setLoading(false);
@@ -96,17 +113,17 @@ const Home = () => {
       </div>
       
       {/* Popular tags section */}
-      {!activeTag && popularTags.length > 0 && (
+      {!activeTag && popularTags && Array.isArray(popularTags) && popularTags.length > 0 && (
         <div className="bg-white p-6 rounded-lg shadow-sm border border-[#3cab7d]/20">
           <h2 className="text-xl font-bold text-[#3cab7d] mb-4">Popular Topics</h2>
           <div className="flex flex-wrap gap-2">
             {popularTags.map((tag) => (
               <button
-                key={tag.name}
-                onClick={() => handleTagClick(tag.name)}
+                key={tag?.name || 'unknown'}
+                onClick={() => handleTagClick(tag?.name || '')}
                 className="px-3 py-1 bg-green-100 text-[#3cab7d] rounded-full hover:bg-green-200 transition-colors"
               >
-                #{tag.name} {tag.count && <span className="text-[#3cab7d]">({tag.count})</span>}
+                #{tag?.name || 'unknown'} {tag?.count && <span className="text-[#3cab7d]">({tag.count})</span>}
               </button>
             ))}
           </div>
@@ -127,7 +144,7 @@ const Home = () => {
           <div className="bg-red-100 text-red-700 p-4 rounded border border-red-300">
             {error}
           </div>
-        ) : posts.length === 0 ? (
+        ) : posts && Array.isArray(posts) && posts.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-[#3cab7d]/20">
             <h2 className="text-2xl font-bold mb-2 text-[#3cab7d]">No Posts Found</h2>
             <p className="text-gray-600 mb-4">
@@ -145,8 +162,8 @@ const Home = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {posts.map((post) => (
-                <PostCard key={post._id} post={post} />
+              {posts && Array.isArray(posts) && posts.map((post) => (
+                <PostCard key={post?._id || Math.random()} post={post} />
               ))}
             </div>
             

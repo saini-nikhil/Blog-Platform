@@ -33,6 +33,8 @@ export const likePost = (id) => API.post(`/posts/${id}/like`);
 export const commentPost = (id, text) => API.post(`/posts/${id}/comments`, { text });
 export const getUserPosts = (userId) => API.get(`/posts/user/${userId}`);
 export const getMyPosts = () => API.get('/posts/my-posts/all');
+export const getPopularTags = () => API.get('/posts/tags/popular');
+
 
 // User API
 export const getUserProfile = (id) => API.get(`/users/profile/${id}`);
